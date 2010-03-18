@@ -1,0 +1,119 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Cloud test</title>
+        <style type="text/css">
+            #cloud, #cloud2
+            {
+                width: 400px;
+                height: 200px;
+                background-color: lightgray;
+                border: blue 1px solid;
+            }
+        </style>
+        <script type="text/javascript" src="../lib/prototype.js">
+        </script>
+        <script type="text/javascript" src="../lib/s2.js">
+        </script>
+        <script type="text/javascript" src="../src/ProtoCloud.js">
+        </script>
+        <script type="text/javascript">
+            var testData = {
+                items: [{
+                    name: "ajax",
+                    count: 15
+                }, {
+                    name: "beth",
+                    count: 2
+                }, {
+                    name: "blog",
+                    count: 4
+                }, {
+                    name: "calendar",
+                    count: 3
+                }, {
+                    name: "calendar entries",
+                    slug: "calendar-entries",
+                    count: 2
+                }, {
+                    name: "Collaboration University",
+                    slug: "collaboration-university",
+                    count: 14
+                }, {
+                    name: "cu-2007",
+                    count: 11
+                }, {
+                    name: "demo",
+                    count: 6
+                }, {
+                    name: "dojo",
+                    count: 31
+                }, {
+                    name: "domino",
+                    count: 20
+                }, {
+                    name: "family",
+                    count: 9
+                }, {
+                    name: "google",
+                    count: 2
+                }, {
+                    name: "ibm",
+                    count: 5
+                }, {
+                    name: "lotusphere",
+                    count: 11
+                }, {
+                    name: "lotus quickr",
+                    slug: "lotus-quickr",
+                    count: 27
+                }, {
+                    name: "movies",
+                    count: 2
+                }, {
+                    name: "podcast",
+                    count: 3
+                }, {
+                    name: "snapps",
+                    count: 30
+                }, {
+                    name: "templates",
+                    count: 17
+                }, {
+                    name: "tutorial",
+                    count: 11
+                }, {
+                    name: "widget",
+                    count: 4
+                }, {
+                    name: "xhr",
+                    count: 3
+                }]
+            };
+        </script>
+        <script type="text/javascript">
+            document.observe('dom:loaded', function(ev){
+                $('cloud2').cloudify();
+            });
+        </script>
+    </head>
+    <body>
+        <h1>Prototype-based Word Cloud</h1>
+        <div id="cloud">
+        </div>
+        <div id="cloud2">
+            <ul>
+                <li>
+                    <a count=5 href="#">tag0</a>
+                </li>
+                <li>
+                    <a count=10 href="#">tag1</a>
+                </li>
+                <li>
+                    <a count=20 href="#">tagN</a>
+                </li>
+            </ul>
+        </div>
+    </body>
+</html>
