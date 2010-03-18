@@ -73,9 +73,9 @@
                 options.isHref = true;
                 var tagData = {};
                 options.data = ul.select('li a').collect(function(link){
-                    tagData[dataAttributes.tag] = link.innerHTML;
-                    tagData[dataAttributes.slug] = link.href;
-                    tagData[dataAttributes.count] = link.readAttribute(options[dataAttributes.count]);
+                    tagData[options.dataAttributes.tag] = link.innerHTML;
+                    tagData[options.dataAttributes.slug] = link.href;
+                    tagData[options.dataAttributes.count] = link.readAttribute(options[options.dataAttributes.count]);
                     return tagData;
                 });
             }
