@@ -1,7 +1,7 @@
 // inspired/modified/ported from code created by Joseph Myers | http://www.codelib.net/
 Object.extend(String.prototype, (function(){
     function colorScale(scalefactor){
-        var hexstr = String(this);
+        var hexstr = String(this).toLowerCase();
         var r = scalefactor;
         var a, i;
         if (!(hexstr.length === 4 || hexstr.length === 7) || !hexstr.startsWith('#')) {
@@ -13,7 +13,7 @@ Object.extend(String.prototype, (function(){
         else if (typeof(r) === 'undefined' || r < 0){
             throw "'" + scalefactor + "' is invalid.  The Scale Factor must be a number greater than 0.  > 1 Will lighten the color. Between 0 and 1 will darken the color.";
         }
-        else if (r === 0){
+        else if (r === 1){
             return hexstr;
         }
         

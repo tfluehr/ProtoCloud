@@ -43,6 +43,57 @@
             this.targetLayout = this.target.getLayout();
             
             this.createTags();
+            
+            // to be used for movement effects
+            //this.calculatePositions();
+            
+            
+            this.target.down('ul').setStyle({
+                visibility: ''
+            });
+        },
+        dropExtra: function(){
+            if (this.options.fitToTarget) {
+                this.options.dataByCount = this.options.data.sortBy((function(tagData){
+                    return this.getCount(tagData);
+                }).bind(this));
+                this.options.dataByCount.each(function(tagData){
+                
+                                });
+            }
+        },
+        calculatePositions: function(){
+            var tags = this.target.select('li a');
+            var data = this.options.data;
+            var layout, tempPos;
+            var center = {
+                left: (this.targetLayout.get('width') / 2),
+                top: (this.targetLayout.get('height') / 2)
+            };
+            //            top.console.info(center.left, ' ', center.top);
+            tags.each(function(tag, index){
+                layout = tag.getLayout();
+                //                top.console.log(layout);
+                data[index].left = layout.get('left');
+                data[index].top = layout.get('top');
+                data[index].width = layout.get('width');
+                data[index].height = layout.get('height');
+                //                console.log(data[index].height, ', ', data[index].width, ', ', data[index].top, ', ', data[index].left)
+                //                tempPos = {
+                //                    left: (center.left - (data[index].width / 2)),
+                //                    top: (center.top - (data[index].height / 2))
+                //                };
+                //                tag.setStyle({
+                //                    left: tempPos.left+'px',
+                //                    top: tempPos.top+'px'
+                //                });
+                //                tag.morph('left:' + data[index].left + 'px;top:' + data[index].top + 'px;', {
+                //                    duration: 1,
+                //                    position: 'parallel'
+                //                });
+            });
+            data = null;
+            top.data = this.options.data;
         },
         getTagData: function(tagData, id){
             return tagData[this.options.dataAttributes[id]];
@@ -70,11 +121,16 @@
                     tagOptions.title = this.getTag(tagData) + ' (' + this.getCount(tagData) + ')';
                 }
                 tag = new Element('li').insert(new Element('a', tagOptions).setStyle({
-                    fontSize: this.getFontSize(this.getCount(tagData))
+                    fontSize: this.getFontSize(this.getCount(tagData)),
+                    color: this.getFontColor(this.getCount(tagData))
                 }).update(this.getTag(tagData) + (this.options.showCount ? ' (' + this.getCount(tagData) + ')' : '')));
                 ul.insert(tag);
                 ul.appendChild(document.createTextNode(' ')); // for proper wrapping we need a text node in between
             }).bind(this));
+            ul.setStyle({
+                position: 'relative',
+                visibility: 'hidden'
+            });
             this.target.update(ul);
         },
         setupOptions: function(options){
@@ -85,28 +141,42 @@
                     slug: 'slug'
                 },
                 minFontSize: 100, // minimum font size in percent
-                maxFontSize: 200, // maximum font size in percent
+                maxFontSize: 300, // maximum font size in percent
+                minColorDimming: 1, // minimum amount to dimcolor < 1 will actually darken
+                maxColorDimming: 5, // maximum amount to dimcolor < 1 will actually darken
+                dimColor: false,
                 className: 'ProtoCloud',
+                baseColor: S2.CSS.colorFromString(this.target.getStyle('color')),
                 tagForSlug: false, // if true and slug is undefined on a tag then tag will be substituted in the hrefTemplate 
                 hrefTemplate: new Template('javascript:alert("name: #{name}, count: #{count}, slug: #{slug}, ");'),
-                showTitle: true,
-                showCount: false,
-                isHref: false,
+                showTitle: true, // add a title attribute to the link containing the tag and count
+                showCount: false, // show count with the tag name
+                isHref: false, // set to true if the 'slug' property will contain the full contents for the link href
+                fitToTarget: false, // will remove the lowest ranked elements that do not fit in the initial dimentions of 'target'
                 // style: 'RANDOM', // also support inline which is much simpler
                 data: [] // array of objects to use for each tag
             };
             this.options = Object.deepExtend(defaultOptions, options);
-            this.options.maxCount = this.options.data.max((function(tagData){
-                return this.getCount(tagData);
+            
+            this.options.data.each((function(tagData){
+                var count = this.getCount(tagData);
+                if (!this.options.minCount || count < this.options.minCount) {
+                    this.options.minCount = count;
+                }
+                if (!this.options.maxCount || count > this.options.maxCount) {
+                    this.options.maxCount = count;
+                }
             }).bind(this));
-            this.options.minCount = this.options.data.min((function(tagData){
-                return this.getCount(tagData);
-            }).bind(this));
-            //            this.options.data.each((function(tagData, index){
-            //                
-            //            }));
             this.options.slope = (this.options.maxFontSize - this.options.minFontSize) / (this.options.maxCount - this.options.minCount);
             this.options.yIntercept = (this.options.minFontSize - ((this.options.slope) * this.options.minCount));
+            
+            this.options.cslope = (this.options.maxColorDimming - this.options.minColorDimming) / (this.options.maxCount - this.options.minCount);
+            this.options.cyIntercept = (this.options.minColorDimming - ((this.options.cslope) * this.options.minCount));
+        },
+        getFontColor: function(count){
+            var val = ((this.options.cslope * count) + this.options.cyIntercept).toFixed(3);
+            val = this.options.maxColorDimming-val + this.options.minColorDimming;
+            return this.options.baseColor.colorScale(val);
         },
         getFontSize: function(count){
             return ((this.options.slope * count) + this.options.yIntercept) + '%';
