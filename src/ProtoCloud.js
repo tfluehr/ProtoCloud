@@ -72,13 +72,12 @@
   // TODO: tests
   ProtoCloud = Class.create({
     initialize: function(target, options){
-      // target is the div/id to create the tag cloud in.  
-      // It's dimensions combined with the contents of options.data will control how many 
-      // tags can be displayed
       this.target = $(target);
       this.setupOptions(options);
       this.target.addClassName(this.options.className);
-      this.targetLayout = this.target.getLayout();
+      if (this.options.useEffects) {
+        this.targetLayout = this.target.getLayout();
+      }
       this.createTags(this.options.data);
       
       this.dropExtra();
