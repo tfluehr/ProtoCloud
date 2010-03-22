@@ -31,14 +31,14 @@
  */
 (function(){
   var REQUIRED_PROTOTYPE = '1.6.1';
-  var REQUIRED_SCRIPTY = '2.0.0_a5';
+  var REQUIRED_SCRIPTY2 = '2.0.0_a5';
+  var REQUIRED_SCRIPTY1 = '1.8.3';
   var checkRequirements = function(){
     function convertVersionString(versionString){ // taken from script.aculo.us
       var v = versionString.replace(/_.*|\./g, '');
       v = parseInt(v + '0'.times(4 - v.length), 10);
       return versionString.indexOf('_') > -1 ? v - 1 : v;
     }
-    
     if ((typeof Prototype == 'undefined') ||
     (typeof Element == 'undefined') ||
     (typeof Element.Methods == 'undefined') ||
@@ -48,14 +48,25 @@
       REQUIRED_PROTOTYPE +
       " from http://prototypejs.org/");
     }
-    if ((typeof S2 == 'undefined') ||
+    var s2CheckFailed = (typeof S2 == 'undefined' || typeof S2.Version == 'undefined') ||
     (convertVersionString(S2.Version) <
-    convertVersionString(REQUIRED_SCRIPTY))) {
+    convertVersionString(REQUIRED_SCRIPTY2));
+    
+    var scriptyCheckFailed = (typeof Scriptaculous == 'undefined') ||
+    (convertVersionString(Scriptaculous.Version) <
+    convertVersionString(REQUIRED_SCRIPTY1));
+    
+    if (s2CheckFailed && scriptyCheckFailed) {
       throw ("ProtoCloud requires the script.aculo.us JavaScript framework >= " +
-      REQUIRED_SCRIPTY +
+      REQUIRED_SCRIPTY2 +
       " from http://scripty2.com/");
     }
-    
+    if (!scriptyCheckFailed && (typeof S2 == 'undefined' || typeof S2.CSS == 'undefined')) {
+      throw ("When using script.aculo.us version " + REQUIRED_SCRIPTY1 + " ProtoCloud requires the use of the S1Addons.js file.");
+    }
+    if (typeof String.prototype.colorScale != 'function'){
+      throw ("ProtoCloud requires the String.colorScale function that was distributed in ScaleColor.js with ProtoCloud");
+    }
   };
   checkRequirements();
   // TODO: tests
@@ -132,7 +143,7 @@
           if (this.options.effects.color) {
             tagEl.down('a').morph('color:' + tagData.targetColor + ';', this.options.effectOptions);
           }
-       }
+        }
         tagData = tagEl = data = null;
       }
     },
@@ -204,9 +215,9 @@
           opacity: false // disabled by default because I don't think it looks good on text in ie
         },
         effectOptions: {
-              duration: 1,
-              position: 'parallel'
-            },
+          duration: 1,
+          position: 'parallel'
+        },
         minFontSize: 100, // minimum font size in percent
         maxFontSize: 300, // maximum font size in percent
         minColorDimming: 1, // minimum amount to dimcolor < 1 will actually darken
