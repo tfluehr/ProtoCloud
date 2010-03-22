@@ -30,241 +30,307 @@
  I would like to see where this ends up :)
  */
 (function(){
-    var REQUIRED_PROTOTYPE = '1.6.1';
-    var REQUIRED_SCRIPTY = '2.0.0_a5';
-    var checkRequirements = function(){
-        function convertVersionString(versionString){ // taken from script.aculo.us
-            var v = versionString.replace(/_.*|\./g, '');
-            v = parseInt(v + '0'.times(4 - v.length), 10);
-            return versionString.indexOf('_') > -1 ? v - 1 : v;
+  var REQUIRED_PROTOTYPE = '1.6.1';
+  var REQUIRED_SCRIPTY = '2.0.0_a5';
+  var checkRequirements = function(){
+    function convertVersionString(versionString){ // taken from script.aculo.us
+      var v = versionString.replace(/_.*|\./g, '');
+      v = parseInt(v + '0'.times(4 - v.length), 10);
+      return versionString.indexOf('_') > -1 ? v - 1 : v;
+    }
+    
+    if ((typeof Prototype == 'undefined') ||
+    (typeof Element == 'undefined') ||
+    (typeof Element.Methods == 'undefined') ||
+    (convertVersionString(Prototype.Version) <
+    convertVersionString(REQUIRED_PROTOTYPE))) {
+      throw ("ProtoCloud requires the Prototype JavaScript framework >= " +
+      REQUIRED_PROTOTYPE +
+      " from http://prototypejs.org/");
+    }
+    if ((typeof S2 == 'undefined') ||
+    (convertVersionString(S2.Version) <
+    convertVersionString(REQUIRED_SCRIPTY))) {
+      throw ("ProtoCloud requires the script.aculo.us JavaScript framework >= " +
+      REQUIRED_SCRIPTY +
+      " from http://scripty2.com/");
+    }
+    
+  };
+  checkRequirements();
+  // TODO: tests
+  ProtoCloud = Class.create({
+    initialize: function(target, options){
+      // target is the div/id to create the tag cloud in.  
+      // It's dimensions combined with the contents of options.data will control how many 
+      // tags can be displayed
+      this.target = $(target);
+      this.setupOptions(options);
+      this.target.addClassName(this.options.className);
+      this.targetLayout = this.target.getLayout();
+      //          for testing an evil IE bug
+      //            this.target.observe('mousedown', function(ev){
+      //                var el = ev.findElement('li');
+      //                if (el) {
+      //                    ev.stop();
+      //                    el.parentNode.removeChild(el.nextSibling);
+      //                    el.remove();
+      //                }
+      //            });
+      this.createTags(this.options.data);
+      
+      // to be used for movement effects
+      this.dropExtra();
+      
+      this.absolutize();
+      
+      this.target.down('ul').setStyle({
+        visibility: ''
+      });
+    },
+    dropExtra: function(){
+      if (this.options.fitToTarget) {
+        this.target.setStyle({
+          overflow: 'hidden'
+        });
+        if (this.target.getHeight() < this.target.scrollHeight) {
+          this.options.dataByCount = this.options.data.sortBy((function(tagData){
+            return this.getCount(tagData);
+          }).bind(this));
+          var tag;
+          while (this.target.getHeight() < this.target.scrollHeight) {
+            tag = this.options.dataByCount.shift();
+            $(tag.id).parentNode.removeChild($(tag.id).nextSibling);
+            $(tag.id).remove();
+            tag = null;
+          }
         }
-        
-        if ((typeof Prototype == 'undefined') ||
-        (typeof Element == 'undefined') ||
-        (typeof Element.Methods == 'undefined') ||
-        (convertVersionString(Prototype.Version) <
-        convertVersionString(REQUIRED_PROTOTYPE))) {
-            throw ("ProtoCloud requires the Prototype JavaScript framework >= " +
-            REQUIRED_PROTOTYPE +
-            " from http://prototypejs.org/");
+      }
+    },
+    absolutize: function(){
+    
+      // work in progress, do not use.
+      //            var tags = this.target.select('li a');
+      var data;
+      if (this.options.dataByCount) {
+        data = this.options.dataByCount;
+      }
+      else {
+        data = this.options.data;
+      }
+      top.data = data;
+      var layout, tempPos;
+      var center = {
+        left: (this.targetLayout.get('width') / 2),
+        top: (this.targetLayout.get('height') / 2)
+      };
+//      this.target.down('ul').setStyle({
+//        position: 'relative'//,
+//        //height: '100%',
+//        //width: '100%'
+//      });
+      var tagEl, tag;
+      var i = data.length;
+      while (i > 0){
+        i--;
+        tag = data[i];
+//        console.log(tag.id);
+        tagEl = $(tag.id);
+//        tagEl.morph('left:100px');
+        layout = tagEl.getLayout();
+        tag.left = layout.get('left');
+        tag.top = layout.get('top');
+        tag.width = layout.get('width');
+        tag.height = layout.get('height');
+//        tagEl.morph('left:' + ((center.left-tag.left)-parseInt(tag.width/2, 10))  + 'px;');
+        tagEl.setStyle({          
+          left: ((center.left-tag.left)-parseInt(tag.width/2, 10)) + 'px',
+          top: ((center.top-tag.top)-parseInt(tag.height/2, 10)) + 'px',
+          opacity: 0
+        });
+         tagEl.morph('left:0px;top:0px; opacity:1', {
+           duration: 1
+         });
+      }
+      
+//      i = data.length;
+//      alert(1);
+//      while (i > 0){
+//        i--;
+//        tag = data[i];
+//        //console.log(tag.id);
+//        tagEl = $(tag.id);
+//        layout = tagEl.getLayout();
+////        tag.left = layout.get('left');
+////        tag.top = layout.get('top');
+////        tag.width = layout.get('width');
+////        tag.height = layout.get('height');
+//        tagEl.setStyle({
+//          position: 'absolute',
+//          left: tag.left + 'px',
+//          bottom: tag.bottom + 'px'
+//        });
+//      }
+//      data.each(function(tag, index){
+//        console.log(tag.id);
+//        tagEl = $(tag.id);
+//        layout = tagEl.getLayout();
+//        data[index].left = layout.get('left');
+//        data[index].top = layout.get('top');
+//        data[index].width = layout.get('width');
+//        data[index].height = layout.get('height');
+//        tagEl.setStyle({
+//          position: 'absolute',
+//          left: layout.get('left') + 'px',
+//          top: layout.get('top') + 'px'
+//        });
+//        //                console.log(data[index].height, ', ', data[index].width, ', ', data[index].top, ', ', data[index].left)
+//        //                tempPos = {
+//        //                    left: (center.left - (data[index].width / 2)),
+//        //                    top: (center.top - (data[index].height / 2))
+//        //                };
+//        //                tag.setStyle({
+//        //                    left: tempPos.left+'px',
+//        //                    top: tempPos.top+'px'
+//        //                });
+//        //                tag.morph('left:' + data[index].left + 'px;top:' + data[index].top + 'px;', {
+//        //                    duration: 1,
+//        //                    position: 'parallel'
+//        //                });
+//      });
+//      this.target.down('ul').setStyle({
+////        position: 'relative',
+//        height: '100%'
+//        //width: '100%'
+//      });
+      data = null;
+    },
+    getTagData: function(tagData, id){
+      return tagData[this.options.dataAttributes[id]];
+    },
+    getCount: function(tagData){
+      return this.getTagData(tagData, 'count');
+    },
+    getTag: function(tagData, keepSpace){
+      // this is so evil, but it was the only way I could come up with to have IE keep multi part items on a singole line without expanding the ' ' because of text-align justify
+      // the span is set to visibility hidden in CSS
+      return this.getTagData(tagData, 'tag').replace(/\s/g, keepSpace ? ' ' : '<span>_</span>');
+    },
+    getSlug: function(tagData){
+      return this.getTagData(tagData, 'slug');
+    },
+    getId: function(){
+      var id;
+      do {
+        id = 'anonymous_element_' + Element.idCounter++;
+      }
+      while ($(id));
+      return id;
+    },
+    createTags: function(data){
+      var ul = new Element('ul');
+      var tag, tagOptions;
+      data.each((function(tagData){
+        if (this.options.tagForSlug) {
+          tagData[this.options.dataAttributes.slug] = Object.isUndefined(this.getSlug(tagData)) ? this.getTag(tagData, true) : this.getSlug(tagData);
         }
-        if ((typeof S2 == 'undefined') ||
-        (convertVersionString(S2.Version) <
-        convertVersionString(REQUIRED_SCRIPTY))) {
-            throw ("ProtoCloud requires the script.aculo.us JavaScript framework >= " +
-            REQUIRED_SCRIPTY +
-            " from http://scripty2.com/");
+        tagOptions = {
+          'href': this.options.isHref ? this.getSlug(tagData, true) : this.options.hrefTemplate.evaluate(tagData)
+        };
+        if (this.options.showTitle) {
+          tagOptions.title = this.getTag(tagData, true) + ' (' + this.getCount(tagData) + ')';
         }
-        
-    };
-    checkRequirements();
-    // TODO: tests
-    ProtoCloud = Class.create({
-        initialize: function(target, options){
-            // target is the div/id to create the tag cloud in.  
-            // It's dimensions combined with the contents of options.data will control how many 
-            // tags can be displayed
-            this.target = $(target);
-            this.setupOptions(options);
-            this.target.addClassName(this.options.className);
-            this.targetLayout = this.target.getLayout();
-//          for testing an evil IE bug
-//            this.target.observe('mousedown', function(ev){
-//                var el = ev.findElement('li');
-//                if (el) {
-//                    ev.stop();
-//                    el.parentNode.removeChild(el.nextSibling);
-//                    el.remove();
-//                }
-//            });
-            this.createTags(this.options.data);
-            
-            // to be used for movement effects
-            //this.calculatePositions();
-            this.dropExtra();
-            
-            this.target.down('ul').setStyle({
-                visibility: ''
-            });
+        tag = new Element('li', {
+          id: (tagData.id = this.getId())
+        }).insert(new Element('a', tagOptions).setStyle({
+          fontSize: this.getFontSize(this.getCount(tagData)),
+          color: this.getFontColor(this.getCount(tagData))
+        }).update(this.getTag(tagData) + (this.options.showCount ? ' (' + this.getCount(tagData) + ')' : '')));
+        ul.insert(tag);
+        ul.appendChild(document.createTextNode(' ')); // for proper wrapping we need a text node in between
+      }).bind(this));
+      //            ul.setStyle({
+      //                position: 'relative',
+      //                visibility: 'hidden'
+      //            });
+      this.target.update(ul);
+    },
+    setupOptions: function(options){
+      var defaultOptions = {
+        dataAttributes: {
+          count: 'count',
+          tag: 'name',
+          slug: 'slug'
         },
-        dropExtra: function(){
-            if (this.options.fitToTarget) {
-                this.target.setStyle({
-                    overflow: 'hidden'
-                });
-                if (this.target.getHeight() < this.target.scrollHeight) {
-                    this.options.dataByCount = this.options.data.sortBy((function(tagData){
-                        return this.getCount(tagData);
-                    }).bind(this));
-                    var tag;
-                    while (this.target.getHeight() < this.target.scrollHeight) {
-                        tag = this.options.dataByCount.shift();
-                        $(tag.id).parentNode.removeChild($(tag.id).nextSibling);
-                        $(tag.id).remove();
-                        tag = null;
-                    }
-                }
-            }
-        },
-        calculatePositions: function(){
-          
-          // work in progress, do not use.
-            var tags = this.target.select('li a');
-            var data = this.options.data;
-            var layout, tempPos;
-            var center = {
-                left: (this.targetLayout.get('width') / 2),
-                top: (this.targetLayout.get('height') / 2)
-            };
-            tags.each(function(tag, index){
-                layout = tag.getLayout();
-                data[index].left = layout.get('left');
-                data[index].top = layout.get('top');
-                data[index].width = layout.get('width');
-                data[index].height = layout.get('height');
-                //                console.log(data[index].height, ', ', data[index].width, ', ', data[index].top, ', ', data[index].left)
-                //                tempPos = {
-                //                    left: (center.left - (data[index].width / 2)),
-                //                    top: (center.top - (data[index].height / 2))
-                //                };
-                //                tag.setStyle({
-                //                    left: tempPos.left+'px',
-                //                    top: tempPos.top+'px'
-                //                });
-                //                tag.morph('left:' + data[index].left + 'px;top:' + data[index].top + 'px;', {
-                //                    duration: 1,
-                //                    position: 'parallel'
-                //                });
-            });
-            data = null;
-            top.data = this.options.data;
-        },
-        getTagData: function(tagData, id){
-            return tagData[this.options.dataAttributes[id]];
-        },
-        getCount: function(tagData){
-            return this.getTagData(tagData, 'count');
-        },
-        getTag: function(tagData, keepSpace){
-            // this is so evil, but it was the only way I could come up with to have IE keep multi part items on a singole line without expanding the ' ' because of text-align justify
-            // the span is set to visibility hidden in CSS
-            return this.getTagData(tagData, 'tag').replace(/\s/g, keepSpace ? ' ' : '<span>_</span>');
-        },
-        getSlug: function(tagData){
-            return this.getTagData(tagData, 'slug');
-        },
-        getId: function(){
-            var id;
-            do {
-                id = 'anonymous_element_' + Element.idCounter++;
-            }
-            while ($(id));
-            return id;
-        },
-        createTags: function(data){
-            var ul = new Element('ul');
-            var tag, tagOptions;
-            data.each((function(tagData){
-                if (this.options.tagForSlug) {
-                    tagData[this.options.dataAttributes.slug] = Object.isUndefined(this.getSlug(tagData)) ? this.getTag(tagData, true) : this.getSlug(tagData);
-                }
-                tagOptions = {
-                    'href': this.options.isHref ? this.getSlug(tagData, true) : this.options.hrefTemplate.evaluate(tagData)
-                };
-                if (this.options.showTitle) {
-                    tagOptions.title = this.getTag(tagData, true) + ' (' + this.getCount(tagData) + ')';
-                }
-                tag = new Element('li', {
-                    id: (tagData.id = this.getId())
-                }).insert(new Element('a', tagOptions).setStyle({
-                    fontSize: this.getFontSize(this.getCount(tagData)),
-                    color: this.getFontColor(this.getCount(tagData))
-                }).update(this.getTag(tagData) + (this.options.showCount ? ' (' + this.getCount(tagData) + ')' : '')));
-                ul.insert(tag);
-                ul.appendChild(document.createTextNode(' ')); // for proper wrapping we need a text node in between
-            }).bind(this));
-            ul.setStyle({
-                position: 'relative',
-                visibility: 'hidden'
-            });
-            this.target.update(ul);
-        },
-        setupOptions: function(options){
-            var defaultOptions = {
-                dataAttributes: {
-                    count: 'count',
-                    tag: 'name',
-                    slug: 'slug'
-                },
-                minFontSize: 100, // minimum font size in percent
-                maxFontSize: 300, // maximum font size in percent
-                minColorDimming: 1, // minimum amount to dimcolor < 1 will actually darken
-                maxColorDimming: 5, // maximum amount to dimcolor < 1 will actually darken
-                dimColor: false,
-                className: 'ProtoCloud',
-                baseColor: S2.CSS.colorFromString(this.target.getStyle('color')),
-                tagForSlug: false, // if true and slug is undefined on a tag then tag will be substituted in the hrefTemplate 
-                hrefTemplate: new Template('javascript:alert("name: #{name}, count: #{count}, slug: #{slug}, ");'),
-                showTitle: true, // add a title attribute to the link containing the tag and count
-                showCount: false, // show count with the tag name
-                isHref: false, // set to true if the 'slug' property will contain the full contents for the link href
-                fitToTarget: true, // will remove the lowest ranked elements that do not fit in the initial dimentions of 'target'
-                // ** warning depending on the data set this may cause the smallest item to be larger then minFontSize
-                // style: 'RANDOM', // also support inline which is much simpler
-                data: [] // array of objects to use for each tag
-            };
-            this.options = Object.deepExtend(defaultOptions, options);
-            
-            this.options.data.each((function(tagData){
-                var count = this.getCount(tagData);
-                if (!this.options.minCount || count < this.options.minCount) {
-                    this.options.minCount = count;
-                }
-                if (!this.options.maxCount || count > this.options.maxCount) {
-                    this.options.maxCount = count;
-                }
-            }).bind(this));
-            this.options.slope = (this.options.maxFontSize - this.options.minFontSize) / (this.options.maxCount - this.options.minCount);
-            this.options.yIntercept = (this.options.minFontSize - ((this.options.slope) * this.options.minCount));
-            
-            this.options.cslope = (this.options.maxColorDimming - this.options.minColorDimming) / (this.options.maxCount - this.options.minCount);
-            this.options.cyIntercept = (this.options.minColorDimming - ((this.options.cslope) * this.options.minCount));
-        },
-        getFontColor: function(count){
-            var val = ((this.options.cslope * count) + this.options.cyIntercept).toFixed(3);
-            val = this.options.maxColorDimming - val + this.options.minColorDimming;
-            return this.options.baseColor.colorScale(val);
-        },
-        getFontSize: function(count){
-            return ((this.options.slope * count) + this.options.yIntercept) + '%';
+        minFontSize: 100, // minimum font size in percent
+        maxFontSize: 300, // maximum font size in percent
+        minColorDimming: 1, // minimum amount to dimcolor < 1 will actually darken
+        maxColorDimming: 5, // maximum amount to dimcolor < 1 will actually darken
+        dimColor: false,
+        className: 'ProtoCloud',
+        baseColor: S2.CSS.colorFromString(this.target.getStyle('color')),
+        tagForSlug: false, // if true and slug is undefined on a tag then tag will be substituted in the hrefTemplate 
+        hrefTemplate: new Template('javascript:alert("name: #{name}, count: #{count}, slug: #{slug}, ");'),
+        showTitle: true, // add a title attribute to the link containing the tag and count
+        showCount: false, // show count with the tag name
+        isHref: false, // set to true if the 'slug' property will contain the full contents for the link href
+        fitToTarget: true, // will remove the lowest ranked elements that do not fit in the initial dimentions of 'target'
+        // ** warning depending on the data set this may cause the smallest item to be larger then minFontSize
+        // style: 'RANDOM', // also support inline which is much simpler
+        data: [] // array of objects to use for each tag
+      };
+      this.options = Object.deepExtend(defaultOptions, options);
+      
+      this.options.data.each((function(tagData){
+        var count = this.getCount(tagData);
+        if (!this.options.minCount || count < this.options.minCount) {
+          this.options.minCount = count;
         }
-    });
-    // TODO finish/simplify implementation 
-    //    Element.addMethods('div', {
-    //        cloudify: function(div, options){
-    //            var ul = div.down('ul');
-    //            var defaultOptions = {
-    //                dataAttributes: {
-    //                    'count': 'count',
-    //                    'tag': 'name',
-    //                    'slug': 'href'
-    //                },
-    //                data: []
-    //            };
-    //            options = Object.deepExtend(defaultOptions, options);
-    //            if (!options.data.size()) {
-    //                options.isHref = true;
-    //                var tagData = {};
-    //                options.data = ul.select('li a').collect(function(link){
-    //                    tagData[options.dataAttributes.tag] = link.innerHTML;
-    //                    tagData[options.dataAttributes.slug] = link.href;
-    //                    tagData[options.dataAttributes.count] = link.readAttribute(options[options.dataAttributes.count]);
-    //                    return tagData;
-    //                });
-    //            }
-    //            ul.remove();
-    //            ul = null;
-    //            return new ProtoCloud(div, options);
-    //        }
-    //    });
+        if (!this.options.maxCount || count > this.options.maxCount) {
+          this.options.maxCount = count;
+        }
+      }).bind(this));
+      this.options.slope = (this.options.maxFontSize - this.options.minFontSize) / (this.options.maxCount - this.options.minCount);
+      this.options.yIntercept = (this.options.minFontSize - ((this.options.slope) * this.options.minCount));
+      
+      this.options.cslope = (this.options.maxColorDimming - this.options.minColorDimming) / (this.options.maxCount - this.options.minCount);
+      this.options.cyIntercept = (this.options.minColorDimming - ((this.options.cslope) * this.options.minCount));
+    },
+    getFontColor: function(count){
+      var val = ((this.options.cslope * count) + this.options.cyIntercept).toFixed(3);
+      val = this.options.maxColorDimming - val + this.options.minColorDimming;
+      return this.options.baseColor.colorScale(val);
+    },
+    getFontSize: function(count){
+      return ((this.options.slope * count) + this.options.yIntercept) + '%';
+    }
+  });
+  // TODO finish/simplify implementation 
+  //    Element.addMethods('div', {
+  //        cloudify: function(div, options){
+  //            var ul = div.down('ul');
+  //            var defaultOptions = {
+  //                dataAttributes: {
+  //                    'count': 'count',
+  //                    'tag': 'name',
+  //                    'slug': 'href'
+  //                },
+  //                data: []
+  //            };
+  //            options = Object.deepExtend(defaultOptions, options);
+  //            if (!options.data.size()) {
+  //                options.isHref = true;
+  //                var tagData = {};
+  //                options.data = ul.select('li a').collect(function(link){
+  //                    tagData[options.dataAttributes.tag] = link.innerHTML;
+  //                    tagData[options.dataAttributes.slug] = link.href;
+  //                    tagData[options.dataAttributes.count] = link.readAttribute(options[options.dataAttributes.count]);
+  //                    return tagData;
+  //                });
+  //            }
+  //            ul.remove();
+  //            ul = null;
+  //            return new ProtoCloud(div, options);
+  //        }
+  //    });
 })();
