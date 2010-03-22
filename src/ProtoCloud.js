@@ -68,142 +68,73 @@
       this.setupOptions(options);
       this.target.addClassName(this.options.className);
       this.targetLayout = this.target.getLayout();
-      //          for testing an evil IE bug
-      //            this.target.observe('mousedown', function(ev){
-      //                var el = ev.findElement('li');
-      //                if (el) {
-      //                    ev.stop();
-      //                    el.parentNode.removeChild(el.nextSibling);
-      //                    el.remove();
-      //                }
-      //            });
       this.createTags(this.options.data);
       
-      // to be used for movement effects
       this.dropExtra();
-      
-      this.absolutize();
-      
-      this.target.down('ul').setStyle({
-        visibility: ''
-      });
+      this.addEffects();
     },
     dropExtra: function(){
       if (this.options.fitToTarget) {
-        this.target.setStyle({
+        var ul = this.target.down('ul');
+        ul.setStyle({
           overflow: 'hidden'
         });
-        if (this.target.getHeight() < this.target.scrollHeight) {
+        if (ul.getHeight() < ul.scrollHeight) {
           this.options.dataByCount = this.options.data.sortBy((function(tagData){
             return this.getCount(tagData);
           }).bind(this));
-          var tag;
-          while (this.target.getHeight() < this.target.scrollHeight) {
+          var tag, tagEl;
+          while (ul.getHeight() < ul.scrollHeight) {
             tag = this.options.dataByCount.shift();
-            $(tag.id).parentNode.removeChild($(tag.id).nextSibling);
-            $(tag.id).remove();
-            tag = null;
+            ul.removeChild((tagEl = $(tag.id)).nextSibling);
+            tagEl.remove();
+            tagEl = tag = null;
           }
         }
       }
     },
-    absolutize: function(){
-    
-      // work in progress, do not use.
-      //            var tags = this.target.select('li a');
-      var data;
-      if (this.options.dataByCount) {
-        data = this.options.dataByCount;
+    addEffects: function(){
+      if (this.options.useEffects) {
+        var data;
+        if (this.options.dataByCount) {
+          data = this.options.dataByCount;
+        }
+        else {
+          data = this.options.data;
+        }
+        var layout, tempPos;
+        var center = {
+          left: (this.targetLayout.get('width') / 2),
+          top: (this.targetLayout.get('height') / 2)
+        };
+        var tagEl, tagData;
+        var i = data.length;
+        while (i > 0) {
+          i--;
+          tagData = data[i];
+          tagEl = $(tagData.id);
+          layout = tagEl.getLayout();
+          tagData.left = layout.get('left');
+          tagData.top = layout.get('top');
+          tagData.width = layout.get('width');
+          tagData.height = layout.get('height');
+          tagEl.setStyle({
+            left: this.options.effects.position ? ((center.left - tagData.left) - parseInt(tagData.width / 2, 10)) + 'px' : '',
+            top: this.options.effects.position ? ((center.top - tagData.top) - parseInt(tagData.height / 2, 10)) + 'px' : '',
+            opacity: this.options.effects.opacity ? 0 : 1
+          });
+          if (this.options.effects.position) {
+            tagEl.morph('left:0px;top:0px;', this.options.effectOptions);
+          }
+          if (this.options.effects.opacity) {
+            tagEl.morph('opacity: 1;', this.options.effectOptions);
+          }
+          if (this.options.effects.color) {
+            tagEl.down('a').morph('color:' + tagData.targetColor + ';', this.options.effectOptions);
+          }
+       }
+        tagData = tagEl = data = null;
       }
-      else {
-        data = this.options.data;
-      }
-      top.data = data;
-      var layout, tempPos;
-      var center = {
-        left: (this.targetLayout.get('width') / 2),
-        top: (this.targetLayout.get('height') / 2)
-      };
-//      this.target.down('ul').setStyle({
-//        position: 'relative'//,
-//        //height: '100%',
-//        //width: '100%'
-//      });
-      var tagEl, tag;
-      var i = data.length;
-      while (i > 0){
-        i--;
-        tag = data[i];
-//        console.log(tag.id);
-        tagEl = $(tag.id);
-//        tagEl.morph('left:100px');
-        layout = tagEl.getLayout();
-        tag.left = layout.get('left');
-        tag.top = layout.get('top');
-        tag.width = layout.get('width');
-        tag.height = layout.get('height');
-//        tagEl.morph('left:' + ((center.left-tag.left)-parseInt(tag.width/2, 10))  + 'px;');
-        tagEl.setStyle({          
-          left: ((center.left-tag.left)-parseInt(tag.width/2, 10)) + 'px',
-          top: ((center.top-tag.top)-parseInt(tag.height/2, 10)) + 'px',
-          opacity: 0
-        });
-         tagEl.morph('left:0px;top:0px; opacity:1', {
-           duration: 1
-         });
-      }
-      
-//      i = data.length;
-//      alert(1);
-//      while (i > 0){
-//        i--;
-//        tag = data[i];
-//        //console.log(tag.id);
-//        tagEl = $(tag.id);
-//        layout = tagEl.getLayout();
-////        tag.left = layout.get('left');
-////        tag.top = layout.get('top');
-////        tag.width = layout.get('width');
-////        tag.height = layout.get('height');
-//        tagEl.setStyle({
-//          position: 'absolute',
-//          left: tag.left + 'px',
-//          bottom: tag.bottom + 'px'
-//        });
-//      }
-//      data.each(function(tag, index){
-//        console.log(tag.id);
-//        tagEl = $(tag.id);
-//        layout = tagEl.getLayout();
-//        data[index].left = layout.get('left');
-//        data[index].top = layout.get('top');
-//        data[index].width = layout.get('width');
-//        data[index].height = layout.get('height');
-//        tagEl.setStyle({
-//          position: 'absolute',
-//          left: layout.get('left') + 'px',
-//          top: layout.get('top') + 'px'
-//        });
-//        //                console.log(data[index].height, ', ', data[index].width, ', ', data[index].top, ', ', data[index].left)
-//        //                tempPos = {
-//        //                    left: (center.left - (data[index].width / 2)),
-//        //                    top: (center.top - (data[index].height / 2))
-//        //                };
-//        //                tag.setStyle({
-//        //                    left: tempPos.left+'px',
-//        //                    top: tempPos.top+'px'
-//        //                });
-//        //                tag.morph('left:' + data[index].left + 'px;top:' + data[index].top + 'px;', {
-//        //                    duration: 1,
-//        //                    position: 'parallel'
-//        //                });
-//      });
-//      this.target.down('ul').setStyle({
-////        position: 'relative',
-//        height: '100%'
-//        //width: '100%'
-//      });
-      data = null;
     },
     getTagData: function(tagData, id){
       return tagData[this.options.dataAttributes[id]];
@@ -212,9 +143,8 @@
       return this.getTagData(tagData, 'count');
     },
     getTag: function(tagData, keepSpace){
-      // this is so evil, but it was the only way I could come up with to have IE keep multi part items on a singole line without expanding the ' ' because of text-align justify
-      // the span is set to visibility hidden in CSS
-      return this.getTagData(tagData, 'tag').replace(/\s/g, keepSpace ? ' ' : '<span>_</span>');
+      // this is so evil, but it was the only way I could come up with to have IE keep multi part items on a single line without expanding the ' ' because of text-align justify
+      return this.getTagData(tagData, 'tag').replace(/\s/g, keepSpace ? ' ' : '<span style="visibility: hidden;">_</span>');
     },
     getSlug: function(tagData){
       return this.getTagData(tagData, 'slug');
@@ -228,7 +158,12 @@
       return id;
     },
     createTags: function(data){
-      var ul = new Element('ul');
+      var ul = new Element('ul').setStyle({
+        position: 'relative',
+        height: '100%',
+        padding: 0,
+        margin: 0
+      });
       var tag, tagOptions;
       data.each((function(tagData){
         if (this.options.tagForSlug) {
@@ -240,19 +175,19 @@
         if (this.options.showTitle) {
           tagOptions.title = this.getTag(tagData, true) + ' (' + this.getCount(tagData) + ')';
         }
+        tagData.targetColor = this.options.dimColor ? this.getFontColor(this.getCount(tagData)) : this.options.baseColor;
         tag = new Element('li', {
           id: (tagData.id = this.getId())
+        }).setStyle({
+          display: 'inline',
+          position: 'relative'
         }).insert(new Element('a', tagOptions).setStyle({
           fontSize: this.getFontSize(this.getCount(tagData)),
-          color: this.getFontColor(this.getCount(tagData))
+          color: this.options.useEffects ? this.options.baseColor : tagData.targetColor
         }).update(this.getTag(tagData) + (this.options.showCount ? ' (' + this.getCount(tagData) + ')' : '')));
         ul.insert(tag);
         ul.appendChild(document.createTextNode(' ')); // for proper wrapping we need a text node in between
       }).bind(this));
-      //            ul.setStyle({
-      //                position: 'relative',
-      //                visibility: 'hidden'
-      //            });
       this.target.update(ul);
     },
     setupOptions: function(options){
@@ -262,11 +197,21 @@
           tag: 'name',
           slug: 'slug'
         },
+        useEffects: true,
+        effects: {
+          position: true,
+          color: true,
+          opacity: false // disabled by default because I don't think it looks good on text in ie
+        },
+        effectOptions: {
+              duration: 1,
+              position: 'parallel'
+            },
         minFontSize: 100, // minimum font size in percent
         maxFontSize: 300, // maximum font size in percent
         minColorDimming: 1, // minimum amount to dimcolor < 1 will actually darken
         maxColorDimming: 5, // maximum amount to dimcolor < 1 will actually darken
-        dimColor: false,
+        dimColor: true,
         className: 'ProtoCloud',
         baseColor: S2.CSS.colorFromString(this.target.getStyle('color')),
         tagForSlug: false, // if true and slug is undefined on a tag then tag will be substituted in the hrefTemplate 
@@ -276,7 +221,6 @@
         isHref: false, // set to true if the 'slug' property will contain the full contents for the link href
         fitToTarget: true, // will remove the lowest ranked elements that do not fit in the initial dimentions of 'target'
         // ** warning depending on the data set this may cause the smallest item to be larger then minFontSize
-        // style: 'RANDOM', // also support inline which is much simpler
         data: [] // array of objects to use for each tag
       };
       this.options = Object.deepExtend(defaultOptions, options);

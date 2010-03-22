@@ -12,30 +12,14 @@
                 font-size: 13.3px;
             }
             
-            #cloud, #cloud2
+            .ProtoCloud
             {
                 margin-left: auto;
                 margin-right: auto;
                 width: 400px;
-                /*
-height: 200px;
-*/
                 background-color: white;
-                /*
-border: 2px dotted #DDDDDD;
-*/
-            }
-            
-            #cloud2
-            {
-                display: none;
-            }
-            
-            .ProtoCloud
-            {
-                /*
-padding: 10px;
-*/
+                border: 2px dotted #DDDDDD;
+                padding: 10px;
                 color: #002A8B;
                 height: 150px;
             }
@@ -43,25 +27,12 @@ padding: 10px;
             .ProtoCloud ul
             {
                 text-align: justify;
-                position: relative;
-                height: 100%;
-                padding: 0;
-                margin: 0;
             }
             
-            .ProtoCloud li
-            {
-                display: inline;
-                position: relative;
-            }
-            .ProtoCloud a span{
-                visibility: hidden;
-            }
             .ProtoCloud a:link, .ProtoCloud a:visited
             {
                 text-decoration: none;
                 vertical-align: baseline;
-                word-spacing: normal;
                 line-height: 1em;
             }
             
@@ -101,7 +72,7 @@ padding: 10px;
                 slug: "collaboration-university",
                 count: 14
             }, {
-                name: "cu-2007",
+                name: "JavaScript",
                 count: 11
             }, {
                 name: "demo",
@@ -164,8 +135,6 @@ padding: 10px;
     <body>
         <h1>Prototype-based Word Cloud</h1>
         <div id="cloud">
-        </div>
-        <div id="cloud2">
             <ul>
                 <li>
                     <a count=5 href="#">tag0</a>
