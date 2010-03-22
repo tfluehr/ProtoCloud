@@ -259,32 +259,31 @@
       return ((this.options.slope * count) + this.options.yIntercept) + '%';
     }
   });
-  // TODO finish/simplify implementation 
-  //    Element.addMethods('div', {
-  //        cloudify: function(div, options){
-  //            var ul = div.down('ul');
-  //            var defaultOptions = {
-  //                dataAttributes: {
-  //                    'count': 'count',
-  //                    'tag': 'name',
-  //                    'slug': 'href'
-  //                },
-  //                data: []
-  //            };
-  //            options = Object.deepExtend(defaultOptions, options);
-  //            if (!options.data.size()) {
-  //                options.isHref = true;
-  //                var tagData = {};
-  //                options.data = ul.select('li a').collect(function(link){
-  //                    tagData[options.dataAttributes.tag] = link.innerHTML;
-  //                    tagData[options.dataAttributes.slug] = link.href;
-  //                    tagData[options.dataAttributes.count] = link.readAttribute(options[options.dataAttributes.count]);
-  //                    return tagData;
-  //                });
-  //            }
-  //            ul.remove();
-  //            ul = null;
-  //            return new ProtoCloud(div, options);
-  //        }
-  //    });
+  Element.addMethods('div', {
+      cloudify: function(div, options){
+          var ul = div.down('ul');
+          var defaultOptions = {
+              dataAttributes: {
+                  'count': 'count',
+                  'tag': 'name',
+                  'slug': 'href'
+              },
+              data: []
+          };
+          options = Object.deepExtend(defaultOptions, options);
+          if (!options.data.size()) {
+              options.isHref = true;
+              var tagData = {};
+              options.data = ul.select('li a').collect(function(link){
+                  tagData = {};
+                  tagData[options.dataAttributes.tag] = link.innerHTML;
+                  tagData[options.dataAttributes.slug] = link.href;
+                  tagData[options.dataAttributes.count] = parseFloat(link.readAttribute(options.dataAttributes.count));
+                  return tagData;
+              });
+          }
+          ul = null;
+          return new ProtoCloud(div, options);
+      }
+  });
 })();
