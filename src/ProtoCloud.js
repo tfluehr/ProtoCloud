@@ -1,35 +1,34 @@
 /*
-    Prototype based implementation of of a Tag Cloud
-    http://tfluehr.com
-    
-    Copyright (c) 2010 Timothy Fluehr tim@tfluehr.com
-    
-    Permission is hereby granted, free of charge, to any person
-    obtaining a copy of this software and associated documentation
-    files (the "Software"), to deal in the Software without
-    restriction, including without limitation the rights to use,
-    copy, modify, merge, publish, distribute, sublicense, and/or sell
-    copies of the Software, and to permit persons to whom the
-    Software is furnished to do so, subject to the following
-    conditions:
-    
-    The above copyright notice and this permission notice shall be
-    included in all copies or substantial portions of the Software.
-    
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-    OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-    NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-    HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-    WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-    OTHER DEALINGS IN THE SOFTWARE.
-    
-    If you do choose to use this,
-    please drop me an email at tim@tfluehr.com
-    I would like to see where this ends up :)
-*/
-
+ Prototype based implementation of of a Tag Cloud
+ http://tfluehr.com
+ 
+ Copyright (c) 2010 Timothy Fluehr tim@tfluehr.com
+ 
+ Permission is hereby granted, free of charge, to any person
+ obtaining a copy of this software and associated documentation
+ files (the "Software"), to deal in the Software without
+ restriction, including without limitation the rights to use,
+ copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the
+ Software is furnished to do so, subject to the following
+ conditions:
+ 
+ The above copyright notice and this permission notice shall be
+ included in all copies or substantial portions of the Software.
+ 
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ OTHER DEALINGS IN THE SOFTWARE.
+ 
+ If you do choose to use this,
+ please drop me an email at tim@tfluehr.com
+ I would like to see where this ends up :)
+ */
 (function(){
     var REQUIRED_PROTOTYPE = '1.6.1';
     var REQUIRED_SCRIPTY = '2.0.0_a5';
@@ -60,7 +59,6 @@
     };
     checkRequirements();
     // TODO: tests
-    // TODO: start actually writing code.
     ProtoCloud = Class.create({
         initialize: function(target, options){
             // target is the div/id to create the tag cloud in.  
@@ -70,12 +68,20 @@
             this.setupOptions(options);
             this.target.addClassName(this.options.className);
             this.targetLayout = this.target.getLayout();
-            
-            this.createTags();
+//          for testing an evil IE bug
+//            this.target.observe('mousedown', function(ev){
+//                var el = ev.findElement('li');
+//                if (el) {
+//                    ev.stop();
+//                    el.parentNode.removeChild(el.nextSibling);
+//                    el.remove();
+//                }
+//            });
+            this.createTags(this.options.data);
             
             // to be used for movement effects
             //this.calculatePositions();
-            
+            this.dropExtra();
             
             this.target.down('ul').setStyle({
                 visibility: ''
@@ -83,15 +89,26 @@
         },
         dropExtra: function(){
             if (this.options.fitToTarget) {
-                this.options.dataByCount = this.options.data.sortBy((function(tagData){
-                    return this.getCount(tagData);
-                }).bind(this));
-                this.options.dataByCount.each(function(tagData){
-                
-                                });
+                this.target.setStyle({
+                    overflow: 'hidden'
+                });
+                if (this.target.getHeight() < this.target.scrollHeight) {
+                    this.options.dataByCount = this.options.data.sortBy((function(tagData){
+                        return this.getCount(tagData);
+                    }).bind(this));
+                    var tag;
+                    while (this.target.getHeight() < this.target.scrollHeight) {
+                        tag = this.options.dataByCount.shift();
+                        $(tag.id).parentNode.removeChild($(tag.id).nextSibling);
+                        $(tag.id).remove();
+                        tag = null;
+                    }
+                }
             }
         },
         calculatePositions: function(){
+          
+          // work in progress, do not use.
             var tags = this.target.select('li a');
             var data = this.options.data;
             var layout, tempPos;
@@ -99,10 +116,8 @@
                 left: (this.targetLayout.get('width') / 2),
                 top: (this.targetLayout.get('height') / 2)
             };
-            //            top.console.info(center.left, ' ', center.top);
             tags.each(function(tag, index){
                 layout = tag.getLayout();
-                //                top.console.log(layout);
                 data[index].left = layout.get('left');
                 data[index].top = layout.get('top');
                 data[index].width = layout.get('width');
@@ -130,26 +145,38 @@
         getCount: function(tagData){
             return this.getTagData(tagData, 'count');
         },
-        getTag: function(tagData){
-            return this.getTagData(tagData, 'tag');
+        getTag: function(tagData, keepSpace){
+            // this is so evil, but it was the only way I could come up with to have IE keep multi part items on a singole line without expanding the ' ' because of text-align justify
+            // the span is set to visibility hidden in CSS
+            return this.getTagData(tagData, 'tag').replace(/\s/g, keepSpace ? ' ' : '<span>_</span>');
         },
         getSlug: function(tagData){
             return this.getTagData(tagData, 'slug');
         },
-        createTags: function(){
+        getId: function(){
+            var id;
+            do {
+                id = 'anonymous_element_' + Element.idCounter++;
+            }
+            while ($(id));
+            return id;
+        },
+        createTags: function(data){
             var ul = new Element('ul');
             var tag, tagOptions;
-            this.options.data.each((function(tagData){
+            data.each((function(tagData){
                 if (this.options.tagForSlug) {
-                    tagData[this.options.dataAttributes.slug] = Object.isUndefined(this.getSlug(tagData)) ? this.getTag(tagData) : this.getSlug(tagData);
+                    tagData[this.options.dataAttributes.slug] = Object.isUndefined(this.getSlug(tagData)) ? this.getTag(tagData, true) : this.getSlug(tagData);
                 }
                 tagOptions = {
-                    'href': this.options.isHref ? this.getSlug(tagData) : this.options.hrefTemplate.evaluate(tagData)
+                    'href': this.options.isHref ? this.getSlug(tagData, true) : this.options.hrefTemplate.evaluate(tagData)
                 };
                 if (this.options.showTitle) {
-                    tagOptions.title = this.getTag(tagData) + ' (' + this.getCount(tagData) + ')';
+                    tagOptions.title = this.getTag(tagData, true) + ' (' + this.getCount(tagData) + ')';
                 }
-                tag = new Element('li').insert(new Element('a', tagOptions).setStyle({
+                tag = new Element('li', {
+                    id: (tagData.id = this.getId())
+                }).insert(new Element('a', tagOptions).setStyle({
                     fontSize: this.getFontSize(this.getCount(tagData)),
                     color: this.getFontColor(this.getCount(tagData))
                 }).update(this.getTag(tagData) + (this.options.showCount ? ' (' + this.getCount(tagData) + ')' : '')));
@@ -181,7 +208,8 @@
                 showTitle: true, // add a title attribute to the link containing the tag and count
                 showCount: false, // show count with the tag name
                 isHref: false, // set to true if the 'slug' property will contain the full contents for the link href
-                fitToTarget: false, // will remove the lowest ranked elements that do not fit in the initial dimentions of 'target'
+                fitToTarget: true, // will remove the lowest ranked elements that do not fit in the initial dimentions of 'target'
+                // ** warning depending on the data set this may cause the smallest item to be larger then minFontSize
                 // style: 'RANDOM', // also support inline which is much simpler
                 data: [] // array of objects to use for each tag
             };
@@ -204,7 +232,7 @@
         },
         getFontColor: function(count){
             var val = ((this.options.cslope * count) + this.options.cyIntercept).toFixed(3);
-            val = this.options.maxColorDimming-val + this.options.minColorDimming;
+            val = this.options.maxColorDimming - val + this.options.minColorDimming;
             return this.options.baseColor.colorScale(val);
         },
         getFontSize: function(count){
