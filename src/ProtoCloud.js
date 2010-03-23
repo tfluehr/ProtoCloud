@@ -1,4 +1,4 @@
-/*
+/*!
  Prototype based implementation of of a Tag Cloud
  http://tfluehr.com
  
@@ -182,7 +182,7 @@
         tagOptions = {
           'href': this.options.isHref ? this.getSlug(tagData, true) : this.options.hrefTemplate.evaluate(tagData)
         };
-        if (this.options.showTitle) {
+        if (this.options.showTooltip) {
           tagOptions.title = this.getTag(tagData, true) + ' (' + this.getCount(tagData) + ')';
         }
         tagData.targetColor = this.options.dimColor ? this.getFontColor(this.getCount(tagData)) : this.options.baseColor;
@@ -195,6 +195,12 @@
           fontSize: this.getFontSize(this.getCount(tagData)),
           color: this.options.useEffects ? this.options.baseColor : tagData.targetColor
         }).update(this.getTag(tagData) + (this.options.showCount ? ' (' + this.getCount(tagData) + ')' : '')));
+        if (typeof(this.options.linkAttributes) == 'function'){
+          var attribs = $H(this.options.linkAttributes(tagData));
+          attribs.each(function(item){
+            tag.down('a').writeAttribute(item.key, item.value);
+          });
+        }
         ul.insert(tag);
         ul.appendChild(document.createTextNode(' ')); // for proper wrapping we need a text node in between
       }).bind(this));
@@ -226,7 +232,8 @@
         baseColor: S2.CSS.colorFromString(this.target.getStyle('color')),
         tagForSlug: false, // if true and slug is undefined on a tag then tag will be substituted in the hrefTemplate 
         hrefTemplate: new Template('javascript:alert("name: #{name}, count: #{count}, slug: #{slug}, ");'),
-        showTitle: true, // add a title attribute to the link containing the tag and count
+        linkAttributes: false, // set to a function that returns the tag attributes required to add a custom tooltip (as an object of key/value pairs) (can also be used to add additional info if it is required)  it will receive the tagData as it's parameter
+        showTooltip: true, // add a title attribute to the link containing the tag and count
         showCount: false, // show count with the tag name
         isHref: false, // set to true if the 'slug' property will contain the full contents for the link href
         fitToTarget: true, // will remove the lowest ranked elements that do not fit in the initial dimentions of 'target'

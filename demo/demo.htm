@@ -127,7 +127,12 @@
             document.observe('dom:loaded', function(ev){
                 new ProtoCloud('cloud', {
                     data: testData,
-                    baseColor: '#002A8B'
+                    baseColor: '#002A8B',
+                    linkAttributes: function(tagData){
+                      return {
+                        ttcontent: tagData.name
+                      };
+                    }
                 });
             });
         </script>
