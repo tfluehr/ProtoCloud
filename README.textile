@@ -2,6 +2,8 @@ h1. ProtoCloud
 
 ProtoCloud is a Prototype-based tag cloud control.
 
+h2. "Example":http://www.tfluehr.com/projects/ProtoCloud/demo/demo.htm
+
 h2. Compatibility
 
 ProtoCloud has been tested and is known to work in the following browsers:
@@ -12,8 +14,6 @@ ProtoCloud has been tested and is known to work in the following browsers:
 * Safari 4
 
 h2. Usage
-
-h3. HTML/JS
 
 
 h3. Options
@@ -78,7 +78,6 @@ Option name is in *bold*, default value is in _italics_
 ** depending on the data set this may cause the smallest item to be larger then minFontSize
 * *data*: _[]_
 ** array of objects to use for each tag
-
 
 
 h3. Callbacks
