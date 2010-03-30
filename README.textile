@@ -71,8 +71,14 @@ Option name is in *bold*, default value is in _italics_
 * *showCount*: _false_
 ** show the count/rank with the tag in the cloud
 * *isHref*: _false_
-** set to true if the *dataAttributes.slug* property will contain the full contents for the link href
+** set to _true_ if the *dataAttributes.slug* property will contain the full contents for the tag link href
 ** *hrefTemplate* will not be used if this is set to true
+* *fitToTarget*: _false_
+** set to _true_ to remove the lowest ranked tags that do not fit in the initial dimentions of the container div
+** depending on the data set this may cause the smallest item to be larger then minFontSize
+* *data*: _[]_
+** array of objects to use for each tag
+
 
 
 h3. Callbacks

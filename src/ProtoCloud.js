@@ -236,7 +236,7 @@
         showTooltip: true, // add a title attribute to the link containing the tag and count
         showCount: false, // show count with the tag name
         isHref: false, // set to true if the 'slug' property will contain the full contents for the link href
-        fitToTarget: true, // will remove the lowest ranked elements that do not fit in the initial dimentions of 'target'
+        fitToTarget: false, // will remove the lowest ranked elements that do not fit in the initial dimentions of 'target'
         // ** warning depending on the data set this may cause the smallest item to be larger then minFontSize
         data: [] // array of objects to use for each tag
       };
