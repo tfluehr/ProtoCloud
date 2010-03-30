@@ -1,0 +1,89 @@
+h1. ProtoCloud
+
+ProtoCloud is a Prototype-based tag cloud control.
+
+h2. Compatibility
+
+ProtoCloud has been tested and is known to work in the following browsers:
+
+* Firefox 3
+* Internet Explorer 8
+* Chrome 4
+* Safari 4
+
+h2. Usage
+
+h3. HTML/JS
+
+
+h3. Options
+
+ProtoCloud takes a number of options that you can use to modify its behavior:
+
+Option name is in *bold*, default value is in _italics_
+
+* *dataAttributes* - Object with three properties specifying data attributes
+** *count*: _'count'_
+*** Key name for the count/rank attribute in the data
+** *tag*: _'name'_
+*** Key name for the label/name attribute in the data
+** *slug*: _'slug'_
+*** Key name for the slug attribute in the data
+* *useEffects*: _true_
+** set to _false_ to disable all effects when showing the tag cloud
+* *effects* - Object with three properties specifying what effects to use when showing the tag cloud
+** *position*: _true_
+*** move tags from the center to their final location
+** *color*: _true_
+*** transitions color from baseColor to the tag's final color
+** *opacity*: _false_
+*** fades in the tag from invisible to fully visible
+*** _false_ by default because IE has some display issues with opague text where it doesn't look quite right.
+* *minFontSize*: _100_
+** minimum font size in percent for tags
+* *maxFontSize*: _300_
+** maximum font size in percent for tags
+* *minColorScale*: _1_
+** minimum amount to scale color for tags
+*** < 1 will darken color
+*** > 1 will lighten color
+* *maxColorScale*: _5_
+** maximum amount to scale color for tags
+*** < 1 will darken color
+*** > 1 will lighten color
+* *scaleColor*: _true_
+** set to _false_ to disable color scaling of tags (all tags will be base color)
+* *className*: _'ProtoCloud'_
+** css class name to add to the div that contains the tag cloud
+** not used by the cloud component itself but added to make styling of clouds easier.
+* *baseColor*: _'#??????'_
+** base color to use for tag colors and color scaling
+** the default is the css color of the cloud's div container
+* *tagForSlug*: _false_
+** if _true_ and *dataAttributes.slug* is undefined on a tag then *dataAttributes.tag* will be substituted in the *hrefTemplate* 
+* *hrefTemplate*: _new Template('javascript:alert("name: #{name}, count: #{count}, slug: #{slug}, ");')_
+** Prototype template used for building the href of the individual tags. 
+* *linkAttributes*: _false_
+** can be set to a function for building additional element attributes to be added to the tag links
+** specify as an object of key/value pairs.  the function will receive the tagData as it's parameter
+* *showTooltip*: _true_
+** add a title attribute (for showing the browser tooltips) to the link containing the tag and count
+* *showCount*: _false_
+** show the count/rank with the tag in the cloud
+* *isHref*: _false_
+** set to true if the *dataAttributes.slug* property will contain the full contents for the link href
+** *hrefTemplate* will not be used if this is set to true
+
+
+h3. Callbacks
+
+
+h2. Examples
+
+
+h2. Authors
+
+Written by "Tim Fluehr":http://github.com/tfluehr - "tfluehr.com":http://www.tfluehr.com/
+
+h3. Credits
+

@@ -185,7 +185,7 @@
         if (this.options.showTooltip) {
           tagOptions.title = this.getTag(tagData, true) + ' (' + this.getCount(tagData) + ')';
         }
-        tagData.targetColor = this.options.dimColor ? this.getFontColor(this.getCount(tagData)) : this.options.baseColor;
+        tagData.targetColor = this.options.scaleColor ? this.getFontColor(this.getCount(tagData)) : this.options.baseColor;
         tag = new Element('li', {
           id: (tagData.id = this.getId())
         }).setStyle({
@@ -225,9 +225,9 @@
         },
         minFontSize: 100, // minimum font size in percent
         maxFontSize: 300, // maximum font size in percent
-        minColorDimming: 1, // minimum amount to dimcolor < 1 will actually darken
-        maxColorDimming: 5, // maximum amount to dimcolor < 1 will actually darken
-        dimColor: true,
+        minColorScale: 1, // minimum amount to scaleColor < 1 will actually darken
+        maxColorScale: 5, // maximum amount to scaleColor < 1 will actually darken
+        scaleColor: true,
         className: 'ProtoCloud',
         baseColor: S2.CSS.colorFromString(this.target.getStyle('color')),
         tagForSlug: false, // if true and slug is undefined on a tag then tag will be substituted in the hrefTemplate 
@@ -254,12 +254,12 @@
       this.options.slope = (this.options.maxFontSize - this.options.minFontSize) / (this.options.maxCount - this.options.minCount);
       this.options.yIntercept = (this.options.minFontSize - ((this.options.slope) * this.options.minCount));
       
-      this.options.cslope = (this.options.maxColorDimming - this.options.minColorDimming) / (this.options.maxCount - this.options.minCount);
-      this.options.cyIntercept = (this.options.minColorDimming - ((this.options.cslope) * this.options.minCount));
+      this.options.cslope = (this.options.maxColorScale - this.options.minColorScale) / (this.options.maxCount - this.options.minCount);
+      this.options.cyIntercept = (this.options.minColorScale - ((this.options.cslope) * this.options.minCount));
     },
     getFontColor: function(count){
       var val = ((this.options.cslope * count) + this.options.cyIntercept).toFixed(3);
-      val = this.options.maxColorDimming - val + this.options.minColorDimming;
+      val = this.options.maxColorScale - val + this.options.minColorScale;
       return this.options.baseColor.colorScale(val);
     },
     getFontSize: function(count){
