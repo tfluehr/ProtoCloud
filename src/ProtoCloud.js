@@ -55,7 +55,11 @@
     var scriptyCheckFailed = (typeof Scriptaculous == 'undefined') ||
     (convertVersionString(Scriptaculous.Version) <
     convertVersionString(REQUIRED_SCRIPTY1));
-    
+    if (s2CheckFailed && scriptyCheckFailed && typeof S2 != 'undefined' && typeof S2.CSS != 'undefined') {
+      throw ("ProtoCloud requires the script.aculo.us JavaScript framework >= " +
+      REQUIRED_SCRIPTY1 +
+      " from http://script.aculo.us/");
+    }
     if (s2CheckFailed && scriptyCheckFailed) {
       throw ("ProtoCloud requires the script.aculo.us JavaScript framework >= " +
       REQUIRED_SCRIPTY2 +
@@ -119,11 +123,10 @@
         };
         var tagEl, tagData;
         var i = data.length;
-        while (i > 0) {
-          i--;
-          tagData = data[i];
-          tagEl = $(tagData.id);
+        if (i === 0) {
+          tagEl = this.target.down('li');
           layout = tagEl.getLayout();
+          tagData = {};
           tagData.left = layout.get('left');
           tagData.top = layout.get('top');
           tagData.width = layout.get('width');
@@ -133,17 +136,34 @@
             top: this.options.effects.position ? ((center.top - tagData.top) - parseInt(tagData.height / 2, 10)) + 'px' : '',
             opacity: this.options.effects.opacity ? 0 : 1
           });
-          if (this.options.effects.position) {
-            tagEl.morph('left:0px;top:0px;', this.options.effectOptions);
-          }
-          if (this.options.effects.opacity) {
-            tagEl.morph('opacity: 1;', this.options.effectOptions);
-          }
-          if (this.options.effects.color) {
-            tagEl.down('a').morph('color:' + tagData.targetColor + ';', this.options.effectOptions);
-          }
         }
-        tagData = tagEl = data = null;
+        else {
+          while (i > 0) {
+            i--;
+            tagData = data[i];
+            tagEl = $(tagData.id);
+            layout = tagEl.getLayout();
+            tagData.left = layout.get('left');
+            tagData.top = layout.get('top');
+            tagData.width = layout.get('width');
+            tagData.height = layout.get('height');
+            tagEl.setStyle({
+              left: this.options.effects.position ? ((center.left - tagData.left) - parseInt(tagData.width / 2, 10)) + 'px' : '',
+              top: this.options.effects.position ? ((center.top - tagData.top) - parseInt(tagData.height / 2, 10)) + 'px' : '',
+              opacity: this.options.effects.opacity ? 0 : 1
+            });
+            if (this.options.effects.position) {
+              tagEl.morph('left:0px;top:0px;', this.options.effectOptions);
+            }
+            if (this.options.effects.opacity) {
+              tagEl.morph('opacity: 1;', this.options.effectOptions);
+            }
+            if (this.options.effects.color) {
+              tagEl.down('a').morph('color:' + tagData.targetColor + ';', this.options.effectOptions);
+            }
+          }
+          tagData = tagEl = data = null;
+        }
       }
     },
     getTagData: function(tagData, id){
@@ -175,35 +195,50 @@
         margin: 0
       });
       var tag, tagOptions;
-      data.each((function(tagData){
-        if (this.options.tagForSlug) {
-          tagData[this.options.dataAttributes.slug] = Object.isUndefined(this.getSlug(tagData)) ? this.getTag(tagData, true) : this.getSlug(tagData);
-        }
-        tagOptions = {
-          'href': this.options.isHref ? this.getSlug(tagData, true) : this.options.hrefTemplate.evaluate(tagData)
-        };
-        if (this.options.showTooltip) {
-          tagOptions.title = this.getTag(tagData, true) + ' (' + this.getCount(tagData) + ')';
-        }
-        tagData.targetColor = this.options.scaleColor ? this.getFontColor(this.getCount(tagData)) : this.options.baseColor;
+      if (data.length === 0) {
         tag = new Element('li', {
-          id: (tagData.id = this.getId())
+          id: this.getId()
         }).setStyle({
           display: 'inline',
           position: 'relative'
-        }).insert(new Element('a', tagOptions).setStyle({
-          fontSize: this.getFontSize(this.getCount(tagData)),
-          color: this.options.useEffects ? this.options.baseColor : tagData.targetColor
-        }).update(this.getTag(tagData) + (this.options.showCount ? ' (' + this.getCount(tagData) + ')' : '')));
-        if (typeof(this.options.linkAttributes) == 'function'){
-          var attribs = $H(this.options.linkAttributes(tagData));
-          attribs.each(function(item){
-            tag.down('a').writeAttribute(item.key, item.value);
-          });
-        }
+        }).insert(new Element('span').setStyle({
+          fontSize: (this.options.minFontSize+(this.options.maxFontSize-this.options.minFontSize)/2)+'%',
+          color: this.options.baseColor
+        }).update(this.options.noTagsMessage));
         ul.insert(tag);
         ul.appendChild(document.createTextNode(' ')); // for proper wrapping we need a text node in between
-      }).bind(this));
+      }
+      else {
+        data.each((function(tagData){
+          if (this.options.tagForSlug) {
+            tagData[this.options.dataAttributes.slug] = Object.isUndefined(this.getSlug(tagData)) ? this.getTag(tagData, true) : this.getSlug(tagData);
+          }
+          tagOptions = {
+            'href': this.options.isHref ? this.getSlug(tagData, true) : this.options.hrefTemplate.evaluate(tagData)
+          };
+          if (this.options.showTooltip) {
+            tagOptions.title = this.getTag(tagData, true) + ' (' + this.getCount(tagData) + ')';
+          }
+          tagData.targetColor = this.options.scaleColor ? this.getFontColor(this.getCount(tagData)) : this.options.baseColor;
+          tag = new Element('li', {
+            id: (tagData.id = this.getId())
+          }).setStyle({
+            display: 'inline',
+            position: 'relative'
+          }).insert(new Element('a', tagOptions).setStyle({
+            fontSize: this.getFontSize(this.getCount(tagData)),
+            color: this.options.useEffects ? this.options.baseColor : tagData.targetColor
+          }).update(this.getTag(tagData) + (this.options.showCount ? ' (' + this.getCount(tagData) + ')' : '')));
+          if (typeof(this.options.linkAttributes) == 'function') {
+            var attribs = $H(this.options.linkAttributes(tagData));
+            attribs.each(function(item){
+              tag.down('a').writeAttribute(item.key, item.value);
+            });
+          }
+          ul.insert(tag);
+          ul.appendChild(document.createTextNode(' ')); // for proper wrapping we need a text node in between
+        }).bind(this));
+      }
       this.target.update(ul);
     },
     setupOptions: function(options){
@@ -228,6 +263,7 @@
         minColorScale: 1, // minimum amount to scaleColor < 1 will actually darken
         maxColorScale: 5, // maximum amount to scaleColor < 1 will actually darken
         scaleColor: true,
+        noTagsMessage: 'No Tags Found',
         className: 'ProtoCloud',
         baseColor: S2.CSS.colorFromString(this.target.getStyle('color')),
         tagForSlug: false, // if true and slug is undefined on a tag then tag will be substituted in the hrefTemplate 
