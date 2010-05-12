@@ -1,4 +1,4 @@
-/*
+/*!
  * stolen from script.aculo.us version 2.0.0_a5
  * you really should use Scripty 2.  This file is here 
  * as a temporary solution to scripty2 still being in alpha.
@@ -324,12 +324,12 @@ if (typeof(Element.Layout) == 'undefined') {
         },
         
         'top': function(element){
-          var offset = element.positionedOffset();
+          var offset = positionedOffset(element);
           return offset.top;
         },
         
         'bottom': function(element){
-          var offset = element.positionedOffset(), parent = element.getOffsetParent(), pHeight = parent.measure('height');
+          var offset = positionedOffset(element), parent = element.getOffsetParent(), pHeight = parent.measure('height');
           
           var mHeight = this.get('border-box-height');
           
@@ -337,12 +337,12 @@ if (typeof(Element.Layout) == 'undefined') {
         },
         
         'left': function(element){
-          var offset = element.positionedOffset();
+          var offset = positionedOffset(element);
           return offset.left;
         },
         
         'right': function(element){
-          var offset = element.positionedOffset(), parent = element.getOffsetParent(), pWidth = parent.measure('width');
+          var offset = positionedOffset(element), parent = element.getOffsetParent(), pWidth = parent.measure('width');
           
           var mWidth = this.get('border-box-width');
           
@@ -451,17 +451,6 @@ if (typeof(Element.Layout) == 'undefined') {
       return $(element).getLayout().get(property);
     }
     
-    function cumulativeOffset(element){
-      var valueT = 0, valueL = 0;
-      do {
-        valueT += element.offsetTop || 0;
-        valueL += element.offsetLeft || 0;
-        element = element.offsetParent;
-      }
-      while (element);
-      return new Element.Offset(valueL, valueT);
-    }
-    
     function positionedOffset(element){
       var layout = element.getLayout();
       
@@ -486,49 +475,9 @@ if (typeof(Element.Layout) == 'undefined') {
       return new Element.Offset(valueL, valueT);
     }
     
-    function cumulativeScrollOffset(element){
-      var valueT = 0, valueL = 0;
-      do {
-        valueT += element.scrollTop || 0;
-        valueL += element.scrollLeft || 0;
-        element = element.parentNode;
-      }
-      while (element);
-      return new Element.Offset(valueL, valueT);
-    }
-    
-    function viewportOffset(forElement){
-      var valueT = 0, valueL = 0;
-      
-      var element = forElement;
-      do {
-        valueT += element.offsetTop || 0;
-        valueL += element.offsetLeft || 0;
-        if (element.offsetParent == document.body &&
-        Element.getStyle(element, 'position') == 'absolute') 
-          break;
-      }
-      while (element = element.offsetParent);
-      
-      element = forElement;
-      var tagName = element.tagName, O = Prototype.Browser.Opera;
-      do {
-        if (!O || tagName && tagName.toUpperCase() === 'BODY') {
-          valueT -= element.scrollTop || 0;
-          valueL -= element.scrollLeft || 0;
-        }
-      }
-      while (element = element.parentNode);
-      return new Element.Offset(valueL, valueT);
-    }
-    
     Element.addMethods({
       getLayout: getLayout,
-      measure: measure,
-      cumulativeOffset: cumulativeOffset,
-      positionedOffset: positionedOffset,
-      cumulativeScrollOffset: cumulativeScrollOffset,
-      viewportOffset: viewportOffset
+      measure: measure
     });
     
     function isBody(element){
@@ -536,20 +485,12 @@ if (typeof(Element.Layout) == 'undefined') {
     }
     
     if ('getBoundingClientRect' in document.documentElement) {
-      Element.addMethods({
-        viewportOffset: function(element){
+        var viewportOffset2 = function(element){
           element = $(element);
           var rect = element.getBoundingClientRect();
           return new Element.Offset(rect.left, rect.top);
-        },
-        
-        cumulativeOffset: function(element){
-          element = $(element);
-          var docOffset = $(document.documentElement).viewportOffset(), elementOffset = element.viewportOffset();
-          return elementOffset.relativeTo(docOffset);
-        },
-        
-        positionedOffset: function(element){
+        };
+        positionedOffset = function(element){
           element = $(element);
           var parent = element.getOffsetParent();
           
@@ -557,7 +498,7 @@ if (typeof(Element.Layout) == 'undefined') {
             return positionedOffset(element);
           }
           
-          var eOffset = element.viewportOffset(), pOffset = isBody(parent) ? viewportOffset(parent) : parent.viewportOffset();
+          var eOffset = viewportOffset2(element), pOffset = isBody(parent) ? viewportOffset(parent) : viewportOffset2(parent);
           var retOffset = eOffset.relativeTo(pOffset);
           
           var layout = element.getLayout();
@@ -565,8 +506,8 @@ if (typeof(Element.Layout) == 'undefined') {
           var left = retOffset.left - layout.get('margin-left');
           
           return new Element.Offset(left, top);
-        }
-      });
-    }
+        };
+      }
+    
   })();
 }

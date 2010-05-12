@@ -32,7 +32,7 @@
 (function(){
   var REQUIRED_PROTOTYPE = '1.6.1';
   var REQUIRED_SCRIPTY2 = '2.0.0_a5';
-  var REQUIRED_SCRIPTY1 = '1.8.3';
+  var REQUIRED_SCRIPTY1 = '1.8.1';
   var checkRequirements = function(){
     function convertVersionString(versionString){ // taken from script.aculo.us
       var v = versionString.replace(/_.*|\./g, '');
