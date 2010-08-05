@@ -299,7 +299,8 @@
       return this.options.baseColor.colorScale(val);
     },
     getFontSize: function(count){
-      return ((this.options.slope * count) + this.options.yIntercept) + '%';
+      var x = ((this.options.slope * count) + this.options.yIntercept);
+      return (isNaN(x) ? this.options.maxFontSize : x) + '%';
     }
   });
   Element.addMethods('div', {
